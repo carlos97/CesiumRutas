@@ -8,9 +8,9 @@
   <!-- Make the application on mobile take up the full browser screen and disable user scaling. -->
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
   <title>Wayfinder3D</title>
-  <script src="Cesium/Cesium.js"></script>
+  <script src="Cesium/build/cesium/Cesium.js"></script>
   <style>
-      @import url(Cesium/Widgets/widgets.css);
+      @import url(Cesium/build/cesium/Widgets/widgets.css);
       html, body, #cesiumContainer {
           width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
       }
@@ -23,21 +23,46 @@
 
   <script>
 
-      var terrainProvider = new Cesium.CesiumTerrainProvider({
-          url: 'https://assets.agi.com/stk-terrain/v1/tilesets/world/tiles',
-          requestVertexNormals: true
-      });
-
       var viewer = new Cesium.Viewer('cesiumContainer', {
-          terrainProvider: terrainProvider,
+          terrainProvider: Cesium.createWorldTerrain(),
           baseLayerPicker: false,
           shouldAnimate: true
       });
 
       var matrizColores = {};
-
-      agregarGeojson('Nevados.geojson', false);
-      agregarGeojson('Catedral.geojson', false);
+	
+	var entity = viewer.entities.add({
+		position : Cesium.Cartesian3.fromDegrees(-74.01007533073425,5.018693972415094,2700),
+	name:"catedral",
+	model : {
+		uri : 'catedral.glb',
+			scale:10
+	}, 
+	label : {
+				show : true,
+				showBackground : true,
+				font : '14px monospace',
+			}
+	
+	});	
+	
+	var entity = viewer.entities.add({
+		position : Cesium.Cartesian3.fromDegrees(-74.08045649528503,4.7431078406043365,2650),
+	name:"Parque los nevados",
+	model : {
+		uri : 'nevados2.gltf',
+			scale:30
+	}, 
+	label : {
+				show : true,
+				showBackground : true,
+				font : '14px monospace',
+			}
+	
+	});		
+		
+      //agregarGeojson('Nevados.geojson', false);
+      //agregarGeojson('Catedral.geojson', false);
       function agregarGeojson(archivo, zoom) {
 
           var miDataSource = new Cesium.GeoJsonDataSource();
@@ -82,10 +107,12 @@
 
       }
 
-
-      viewer.dataSources.add(Cesium.CzmlDataSource.load('ruta.CZML')).then(function (ds) {
+	setTimeout(function(){
+		viewer.dataSources.add(Cesium.CzmlDataSource.load('ruta.CZML')).then(function (ds) {
           viewer.trackedEntity = ds.entities.getById('path');
       });
+	},2000);
+      
 
 
 
