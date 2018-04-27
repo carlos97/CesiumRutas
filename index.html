@@ -1,0 +1,94 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Use correct character set. -->
+  <meta charset="utf-8">
+  <!-- Tell IE to use the latest, best version. -->
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <!-- Make the application on mobile take up the full browser screen and disable user scaling. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <title>Wayfinder3D</title>
+  <script src="Cesium/Cesium.js"></script>
+  <style>
+      @import url(Cesium/Widgets/widgets.css);
+      html, body, #cesiumContainer {
+          width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
+      }
+  </style>
+</head>
+<body>
+    <div id="cesiumContainer" class="fullSize"></div>
+    <div id="loadingOverlay"><h1>Loading...</h1></div>
+    <div id="toolbar"></div>
+
+  <script>
+
+      var terrainProvider = new Cesium.CesiumTerrainProvider({
+          url: 'https://assets.agi.com/stk-terrain/v1/tilesets/world/tiles',
+          requestVertexNormals: true
+      });
+
+      var viewer = new Cesium.Viewer('cesiumContainer', {
+          terrainProvider: terrainProvider,
+          baseLayerPicker: false,
+          shouldAnimate: true
+      });
+
+      var matrizColores = {};
+
+      agregarGeojson('Nevados.geojson', false);
+      agregarGeojson('Catedral.geojson', false);
+      function agregarGeojson(archivo, zoom) {
+
+          var miDataSource = new Cesium.GeoJsonDataSource();
+          var promesa = miDataSource.load(archivo);
+
+
+          promesa.then(function (miDataSource) {
+              viewer.dataSources.add(miDataSource);
+              if (zoom == true) {
+                  viewer.zoomTo(miDataSource);
+              }
+              var entidades = miDataSource.entities.values;
+
+
+              for (var i = 0; i < entidades.length; i++) {
+                  var miEntidad = entidades[i];
+                  var propietario = miEntidad.properties.propietario;
+                  var altura = miEntidad.properties.altura;
+                  var color = matrizColores[propietario];
+                  if (!color) {
+                      color = Cesium.Color.fromRandom({
+                          alpha: 0.5
+                      });
+
+                      matrizColores[propietario] = color;
+                  }
+
+                  miEntidad.polygon.material = color;
+                  miEntidad.polygon.outline = true;
+
+                  var posicion = miEntidad.polygon.hierarchy.getValue().positions[0];
+                  miEntidad.polygon.height = 2650;
+                  miEntidad.polygon.extrudedHeight = 2650 + miEntidad.properties.Altura;
+                  
+              }
+
+
+          }).otherwise(function (error) {
+              console.error(error);
+              console.error('No se cumplió la promesa!!');
+          });
+
+      }
+
+
+      viewer.dataSources.add(Cesium.CzmlDataSource.load('ruta.CZML')).then(function (ds) {
+          viewer.trackedEntity = ds.entities.getById('path');
+      });
+
+
+
+  </script>
+</body>
+</html>
